@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.web.*?>
+<SplitPane
+	fx:controller="com.pnatu.hackernews.gui.TopStoriesScreenController"
+	xmlns:fx="http://javafx.com/fxml">
+	<padding>
+		<Insets top="5" right="5" bottom="5" left="5" />
+	</padding>
+
+	<ListView fx:id="lv_topStories" onMouseClicked="#handleMouseClick"/>
+
+	<WebView fx:id="wv_hnStory"></WebView>
+	<!-- <Button text="Test" GridPane.columnIndex="0" GridPane.rowIndex="1" 
+		GridPane.columnSpan="1" onAction="#populateTopStoriesView" /> -->
+
+</SplitPane>
+
