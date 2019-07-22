@@ -6,18 +6,34 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.web.*?>
-<SplitPane
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ProgressBar?>
+<SplitPane fx:id="mainSplitPane"
 	fx:controller="com.pnatu.hackernews.gui.TopStoriesScreenController"
 	xmlns:fx="http://javafx.com/fxml">
+
 	<padding>
 		<Insets top="5" right="5" bottom="5" left="5" />
 	</padding>
 
-	<ListView fx:id="lv_topStories" onMouseClicked="#handleMouseClick"/>
+	<ListView fx:id="lv_topStories"
+		onMouseClicked="#handleStoryMouseClick" />
+	<VBox fillWidth="true">
+		<ProgressBar fx:id="prgWv" maxHeight="10"></ProgressBar>
+		<TabPane fx:id="tbp_Content" VBox.vgrow="ALWAYS"
+			tabClosingPolicy="UNAVAILABLE">
+			<Tab text="Article">
+				<WebView fx:id="wv_hnStory"></WebView>
+			</Tab>
+			<Tab text="Comments">
+				<TreeView fx:id="tv_CommentTree">
 
-	<WebView fx:id="wv_hnStory"></WebView>
-	<!-- <Button text="Test" GridPane.columnIndex="0" GridPane.rowIndex="1" 
-		GridPane.columnSpan="1" onAction="#populateTopStoriesView" /> -->
+				</TreeView>
+			</Tab>
+		</TabPane>
+	</VBox>
 
 </SplitPane>
 

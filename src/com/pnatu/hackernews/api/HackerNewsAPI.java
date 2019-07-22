@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.pnatu.hackernews.commons.Constants;
+import com.pnatu.hackernews.commons.HNComment;
 import com.pnatu.hackernews.commons.HNStory;
 import com.pnatu.hackernews.commons.HTTPHelper;
 
@@ -38,7 +39,7 @@ public class HackerNewsAPI {
 		String title;
 		String url;
 
-		storyJsonResponse = HTTPHelper.makeRequest(String.format(Constants.HN_GET_STORY_URL, storyId), "get");
+		storyJsonResponse = HTTPHelper.makeRequest(String.format(Constants.HN_GET_ITEM_URL, storyId), "get");
 		JSONObject jsonObjectStory = new JSONObject(storyJsonResponse);
 		if (jsonObjectStory.getString("type").equals("story")) {
 			author = jsonObjectStory.getString("by");
@@ -58,12 +59,36 @@ public class HackerNewsAPI {
 			title = jsonObjectStory.getString("title");
 			if (jsonObjectStory.has("url")) {
 				url = jsonObjectStory.getString("url");
-			}
-			else
+			} else
 				url = null;
 			return new HNStory(author, id, kids, score, time, title, url);
 		}
 		return null;
+
+	}
+
+	public static HNComment getComment(int commentId) throws IOException {
+		String author;
+		String text;
+		int time;
+		String commentJsonResponse;
+		HNComment singleComment = null;
+		commentJsonResponse = HTTPHelper.makeRequest(String.format(Constants.HN_GET_ITEM_URL, commentId), "get");
+		JSONObject jsonObjectComment = new JSONObject(commentJsonResponse);
+
+		if (jsonObjectComment.getString("type").equals("comment")) {
+			author = jsonObjectComment.has("by") ? jsonObjectComment.getString("by") : null;
+			text = jsonObjectComment.has("text") ? jsonObjectComment.getString("text") : null;
+			time = jsonObjectComment.getInt("time");
+			singleComment = new HNComment(author, text, time);
+			if (jsonObjectComment.has("kids")) {
+				JSONArray jsonKidsList = jsonObjectComment.getJSONArray("kids");
+				for (Object kidsId : jsonKidsList) {
+					singleComment.addKid(getComment(Integer.parseInt(kidsId.toString())));
+				}
+			}
+		}
+		return singleComment;
 
 	}
 }

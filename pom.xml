@@ -8,11 +8,15 @@
 	<name>HackerNews</name>
 	<description>A JavaFX based cross-platform GUI client for HackerNews</description>
 	<dependencies>
-		<!-- https://mvnrepository.com/artifact/org.json/json -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20180813</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-web</artifactId>
+			<version>12</version>
 		</dependency>
 
 	</dependencies>

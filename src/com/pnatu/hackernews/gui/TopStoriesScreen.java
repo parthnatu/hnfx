@@ -7,8 +7,10 @@ import com.pnatu.hackernews.api.HackerNewsAPI;
 import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 public class TopStoriesScreen extends Application {
@@ -16,11 +18,16 @@ public class TopStoriesScreen extends Application {
 	public void start(Stage primaryStage) {
 		try {
 			Parent root = FXMLLoader.load(getClass().getResource("test_list_top_stories.fxml"));
-
 			Scene scene = new Scene(root, 500, 500);
-
-			primaryStage.setTitle("FXML Welcome");
+			primaryStage.setTitle("hnfx - Hacker News");
 			primaryStage.setScene(scene);
+			Screen screen = Screen.getPrimary();
+			Rectangle2D bounds = screen.getVisualBounds();
+
+			primaryStage.setX(bounds.getMinX());
+			primaryStage.setY(bounds.getMinY());
+			primaryStage.setWidth(bounds.getWidth());
+			primaryStage.setHeight(bounds.getHeight());	
 			primaryStage.show();
 		} catch (Exception e) {
 			e.printStackTrace();
