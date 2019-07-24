@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ListCell?>
+	 <?import javafx.scene.text.*?>
+<ListCell xmlns:fx="http://javafx.com/fxml/1">
+	<!-- TODO Add Nodes -->
+	<Text fx:id="txt_Title" style="-fx-font-weight: bold">
+	</Text>
+	<Text fx:id="txt_Score" style="-fx-stroke: grey">
+	</Text>
+	<Text fx:id="txt_Time">
+	</Text>
+</ListCell>
+

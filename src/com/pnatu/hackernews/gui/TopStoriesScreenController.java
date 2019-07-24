@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import com.pnatu.hackernews.api.HackerNewsAPI;
+import com.pnatu.hackernews.commons.CustomStoryListCell;
 import com.pnatu.hackernews.commons.HNComment;
 import com.pnatu.hackernews.commons.HNStory;
 import com.pnatu.hackernews.commons.WebViewFitContent;
@@ -30,6 +31,7 @@ import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.util.Callback;
 
 public class TopStoriesScreenController implements Initializable {
 	@FXML
@@ -46,11 +48,13 @@ public class TopStoriesScreenController implements Initializable {
 	private TabPane tbp_Content;
 	private static ObservableList<HNStory> listTopStories;
 	private static double tbp_ContentWidth = 0.0;
+	private static int currentTopStoryProgress = 0;
+	private static int totalTopStory = 0;
 
-	private static class AddToStoryListTask extends Task<Void> {
+	private static class HNLoadApiTask extends Task<Void> {
 		private final int id;
 
-		public AddToStoryListTask(int id) {
+		public HNLoadApiTask(int id) {
 			this.id = id;
 		}
 
@@ -62,6 +66,8 @@ public class TopStoriesScreenController implements Initializable {
 				@Override
 				public void run() {
 					listTopStories.add(story);
+					currentTopStoryProgress++;
+					updateProgress(currentTopStoryProgress, totalTopStory);
 				}
 			});
 
@@ -69,7 +75,6 @@ public class TopStoriesScreenController implements Initializable {
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked", "unused" })
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		List<Integer> topStoryIds;
@@ -87,21 +92,21 @@ public class TopStoriesScreenController implements Initializable {
 			topStoryIds.remove(0);
 			listTopStories = FXCollections.observableArrayList(initStoryTitle);
 			lv_topStories.setItems(listTopStories);
-			lv_topStories.setCellFactory(param -> new ListCell<HNStory>() {
-				@Override
-				protected void updateItem(HNStory item, boolean empty) {
-					super.updateItem(item, empty);
+			lv_topStories.setCellFactory(new Callback<ListView<HNStory>, ListCell<HNStory>>() {
 
-					if (empty || item == null || item.getTitle() == null) {
-						setText(null);
-					} else {
-						setText(item.getTitle());
-					}
+				@Override
+				public ListCell<HNStory> call(ListView<HNStory> arg0) {
+					// TODO Auto-generated method stub
+					return new CustomStoryListCell();
 				}
 			});
+			totalTopStory = topStoryIds.size();
 			for (int storyId : topStoryIds) {
-				new Thread(new AddToStoryListTask(storyId)).start();
-				lv_topStories.refresh();
+				HNLoadApiTask addToListTask = new HNLoadApiTask(storyId);
+				addToListTask.setOnSucceeded(e -> {
+					lv_topStories.refresh();
+				});
+				new Thread(addToListTask).start();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
