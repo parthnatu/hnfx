@@ -17,6 +17,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -114,30 +115,64 @@ public class TopStoriesScreenController implements Initializable {
 
 		lv_topStories.getSelectionModel().select(0);
 		tbp_Content.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
+			@SuppressWarnings({ "rawtypes", "unchecked" })
 			@Override
 			public void changed(ObservableValue<? extends Tab> arg0, Tab arg1, Tab arg2) {
 				if (arg2.getText().equals("Comments")
 						&& lv_topStories.getSelectionModel().getSelectedItem().getKids() != null) {
+					arg2.setDisable(true);
+
 					TreeItem commentRootItem = new TreeItem("Comments");
 					tv_CommentTree.setRoot(commentRootItem);
 					tv_CommentTree.setShowRoot(false);
-					for (int commentId : lv_topStories.getSelectionModel().getSelectedItem().getKids()) {
-						Platform.runLater(new Runnable() {
-							@Override
-							public void run() {
-								try {
-									HNComment comment = HackerNewsAPI.getComment(commentId);
-									TreeItem<WebView> commentTreeItem = getCommentTree(comment, true);
-									commentRootItem.getChildren().add(commentTreeItem);
-								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+					Service<Void> commentService = new Service<Void>() {
+
+						@Override
+						protected Task<Void> createTask() {
+							return new Task<Void>() {
+
+								@Override
+								protected Void call() throws Exception {
+									int count = 0;
+									for (int commentId : lv_topStories.getSelectionModel().getSelectedItem()
+											.getKids()) {
+
+										try {
+											HNComment comment = HackerNewsAPI.getComment(commentId);
+											Platform.runLater(new Runnable() {
+												TreeItem<WebViewFitContent> commentTreeItem = null;
+
+												@Override
+												public void run() {
+													commentTreeItem = getCommentTree(comment, true);
+													commentRootItem.getChildren().add(commentTreeItem);
+
+												}
+											});
+											count++;
+											updateProgress(count, lv_topStories.getSelectionModel().getSelectedItem()
+													.getKids().size());
+										} catch (IOException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+									}
+									return null;
 								}
-							}
-						});
-						tv_CommentTree.refresh();
-					}
-				}
+							};
+						}
+					};
+					commentService.setOnSucceeded(success -> {
+						arg2.setDisable(false);
+						tv_CommentTree.setRoot(commentRootItem);
+						tv_CommentTree.setShowRoot(false);
+					});
+					prgWv.progressProperty().bind(commentService.progressProperty());
+					commentService.start();
+
+				} else
+					prgWv.progressProperty().bind(wv_hnStory.getEngine().getLoadWorker().progressProperty());
+
 			}
 		});
 		prgWv.progressProperty().bind(wv_hnStory.getEngine().getLoadWorker().progressProperty());
@@ -147,15 +182,12 @@ public class TopStoriesScreenController implements Initializable {
 
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static TreeItem getCommentTree(HNComment rootComment, boolean topLevel) {
+	private static TreeItem<WebViewFitContent> getCommentTree(HNComment rootComment, boolean topLevel) {
 		TreeItem<WebViewFitContent> rootCommentItem = null;
 		if (topLevel)
-			rootCommentItem = new TreeItem<WebViewFitContent>(
-					new WebViewFitContent(rootComment.getText(), " #f7f7f7", tbp_ContentWidth));
+			rootCommentItem = new TreeItem<WebViewFitContent>(new WebViewFitContent(rootComment.getText(), " #f7f7f7"));
 		else
-			rootCommentItem = new TreeItem<WebViewFitContent>(
-					new WebViewFitContent(rootComment.getText(), "", tbp_ContentWidth));
+			rootCommentItem = new TreeItem<WebViewFitContent>(new WebViewFitContent(rootComment.getText(), ""));
 		for (HNComment comment : rootComment.getKids()) {
 			if (comment.getKids().size() > 0)
 				rootCommentItem.getChildren().add(getCommentTree(comment, false));
@@ -165,6 +197,8 @@ public class TopStoriesScreenController implements Initializable {
 		return rootCommentItem;
 
 	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 
 	@FXML
 	public void handleStoryMouseClick(MouseEvent arg0) {

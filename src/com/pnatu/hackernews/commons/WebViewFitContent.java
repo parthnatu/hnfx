@@ -20,9 +20,8 @@ public final class WebViewFitContent extends Region {
 	final WebView webview = new WebView();
 	final WebEngine webEngine = webview.getEngine();
 
-	public WebViewFitContent(String content, String backgroundColor, double prefWidth) {
+	public WebViewFitContent(String content, String backgroundColor) {
 		webview.setPrefHeight(5);
-		webview.setPrefWidth(prefWidth - 20);
 		widthProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue, Object newValue) {
